@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Professional, Service, Appointment, SalonSettings, Subscription, Client } from '@/types/salon';
+import { Professional, Service, Appointment, SalonSettings, Subscription, Client, ThemePreset } from '@/types/salon';
 import { professionals as defaultProfessionals, services as defaultServices, sampleAppointments, defaultSalonSettings } from '@/data/salonData';
 import { getDayOfWeekFromDateString } from '@/lib/dateUtils';
 
@@ -41,6 +41,30 @@ export function SalonProvider({ children }: { children: React.ReactNode }) {
     expiresAt: null,
   });
 
+  const applyTheme = (theme: ThemePreset) => {
+    const themes = {
+      purple: {
+        '--primary': '270 70% 50%',
+        '--primary-foreground': '0 0% 100%',
+        '--accent': '330 80% 60%',
+      },
+      rose: {
+        '--primary': '350 80% 55%',
+        '--primary-foreground': '0 0% 100%',
+        '--accent': '350 70% 70%',
+      },
+      gold: {
+        '--primary': '45 90% 40%',
+        '--primary-foreground': '0 0% 100%',
+        '--accent': '45 90% 55%',
+      },
+    };
+    const themeCSS = themes[theme];
+    Object.entries(themeCSS).forEach(([key, value]) => {
+      document.documentElement.style.setProperty(key, value);
+    });
+  };
+
   // Load from localStorage
   useEffect(() => {
     const savedSubscription = localStorage.getItem('salon_subscription');
@@ -52,6 +76,20 @@ export function SalonProvider({ children }: { children: React.ReactNode }) {
     if (savedAppointments) {
       setAppointments(JSON.parse(savedAppointments));
     }
+
+    const savedSettings = localStorage.getItem('salon_settings');
+    if (savedSettings) {
+      const parsedSettings = JSON.parse(savedSettings);
+      setSettings(parsedSettings);
+      if (parsedSettings.themePreset) {
+        applyTheme(parsedSettings.themePreset);
+      }
+    }
+
+    const savedProfessionals = localStorage.getItem('salon_professionals');
+    if (savedProfessionals) {
+      setProfessionals(JSON.parse(savedProfessionals));
+    }
   }, []);
 
   // Save to localStorage
@@ -62,6 +100,14 @@ export function SalonProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     localStorage.setItem('salon_appointments', JSON.stringify(appointments));
   }, [appointments]);
+
+  useEffect(() => {
+    localStorage.setItem('salon_settings', JSON.stringify(settings));
+  }, [settings]);
+
+  useEffect(() => {
+    localStorage.setItem('salon_professionals', JSON.stringify(professionals));
+  }, [professionals]);
 
   const generateTimeSlots = (start: string, end: string, intervalMinutes: number = 30): string[] => {
     const slots: string[] = [];

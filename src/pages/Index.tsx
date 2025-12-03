@@ -9,6 +9,7 @@ import { TimeSlotPicker } from '@/components/booking/TimeSlotPicker';
 import { ClientForm } from '@/components/booking/ClientForm';
 import { BookingSuccess } from '@/components/booking/BookingSuccess';
 import { Service, Professional } from '@/types/salon';
+import { cn } from '@/lib/utils';
 import { 
   Calendar, 
   Sparkles, 
@@ -165,10 +166,23 @@ const Index = () => {
       {/* Navigation */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center shadow-soft">
-              <Heart className="w-5 h-5 text-primary-foreground" />
-            </div>
+          <div className="flex items-center gap-3">
+            {settings.logoUrl ? (
+              <img
+                src={settings.logoUrl}
+                alt={settings.name}
+                className={cn(
+                  'w-10 h-10 object-cover shadow-soft',
+                  settings.logoFormat === 'circular' && 'rounded-full',
+                  settings.logoFormat === 'square' && 'rounded-xl',
+                  settings.logoFormat === 'rectangular' && 'rounded-lg w-14 h-10'
+                )}
+              />
+            ) : (
+              <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center shadow-soft">
+                <Heart className="w-5 h-5 text-primary-foreground" />
+              </div>
+            )}
             <span className="font-display font-semibold text-xl text-foreground">{settings.name}</span>
           </div>
           <Link to="/admin">
@@ -182,7 +196,21 @@ const Index = () => {
 
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 overflow-hidden">
-        <div className="absolute inset-0 gradient-soft" />
+        {settings.bannerUrl ? (
+          <div className="absolute inset-0">
+            <img
+              src={settings.bannerUrl}
+              alt="Banner"
+              className={cn(
+                'w-full h-full object-cover opacity-20',
+                settings.bannerFormat === 'circular' && 'rounded-full'
+              )}
+            />
+            <div className="absolute inset-0 gradient-soft" />
+          </div>
+        ) : (
+          <div className="absolute inset-0 gradient-soft" />
+        )}
         <div className="absolute top-20 left-10 w-64 h-64 bg-primary/10 rounded-full blur-3xl animate-float" />
         <div className="absolute bottom-10 right-10 w-96 h-96 bg-accent/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
         

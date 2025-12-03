@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { SubscriptionGate } from '@/components/SubscriptionGate';
 import { useSalon } from '@/contexts/SalonContext';
@@ -8,7 +8,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/hooks/use-toast';
-import { Save, Store, Clock, Phone } from 'lucide-react';
+import { Save, Store, Clock, Phone, Palette, Image } from 'lucide-react';
+import { ImageUploader } from '@/components/admin/ImageUploader';
+import { ThemeSelector, getThemeCSS } from '@/components/admin/ThemeSelector';
+import { ImageFormat, ThemePreset } from '@/types/salon';
 
 export default function Settings() {
   const { settings, updateSettings } = useSalon();
@@ -18,7 +21,36 @@ export default function Settings() {
     whatsapp: settings.whatsapp,
     openingStart: settings.openingHours.start,
     openingEnd: settings.openingHours.end,
+    bannerUrl: settings.bannerUrl,
+    logoUrl: settings.logoUrl,
+    logoFormat: settings.logoFormat,
+    bannerFormat: settings.bannerFormat,
+    themePreset: settings.themePreset,
   });
+
+  useEffect(() => {
+    setFormData({
+      name: settings.name,
+      description: settings.description,
+      whatsapp: settings.whatsapp,
+      openingStart: settings.openingHours.start,
+      openingEnd: settings.openingHours.end,
+      bannerUrl: settings.bannerUrl,
+      logoUrl: settings.logoUrl,
+      logoFormat: settings.logoFormat,
+      bannerFormat: settings.bannerFormat,
+      themePreset: settings.themePreset,
+    });
+  }, [settings]);
+
+  const handleThemeChange = (theme: ThemePreset) => {
+    setFormData({ ...formData, themePreset: theme });
+    // Apply theme immediately
+    const themeCSS = getThemeCSS(theme);
+    Object.entries(themeCSS).forEach(([key, value]) => {
+      document.documentElement.style.setProperty(key, value);
+    });
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,6 +62,11 @@ export default function Settings() {
         start: formData.openingStart,
         end: formData.openingEnd,
       },
+      bannerUrl: formData.bannerUrl,
+      logoUrl: formData.logoUrl,
+      logoFormat: formData.logoFormat,
+      bannerFormat: formData.bannerFormat,
+      themePreset: formData.themePreset,
     });
     toast({ title: 'Configurações salvas com sucesso!' });
   };
@@ -75,6 +112,51 @@ export default function Settings() {
                   />
                 </div>
               </div>
+            </Card>
+
+            <Card className="p-6 border-0 shadow-card">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center">
+                  <Image className="w-5 h-5 text-primary-foreground" />
+                </div>
+                <h2 className="font-display font-semibold text-lg text-foreground">
+                  Personalização Visual
+                </h2>
+              </div>
+
+              <div className="space-y-6">
+                <ImageUploader
+                  label="Banner do Salão"
+                  currentUrl={formData.bannerUrl}
+                  format={formData.bannerFormat}
+                  onUrlChange={(url) => setFormData({ ...formData, bannerUrl: url })}
+                  onFormatChange={(format) => setFormData({ ...formData, bannerFormat: format })}
+                />
+
+                <ImageUploader
+                  label="Logotipo"
+                  currentUrl={formData.logoUrl}
+                  format={formData.logoFormat}
+                  onUrlChange={(url) => setFormData({ ...formData, logoUrl: url })}
+                  onFormatChange={(format) => setFormData({ ...formData, logoFormat: format })}
+                />
+              </div>
+            </Card>
+
+            <Card className="p-6 border-0 shadow-card">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center">
+                  <Palette className="w-5 h-5 text-primary-foreground" />
+                </div>
+                <h2 className="font-display font-semibold text-lg text-foreground">
+                  Tema Visual
+                </h2>
+              </div>
+
+              <ThemeSelector
+                currentTheme={formData.themePreset}
+                onThemeChange={handleThemeChange}
+              />
             </Card>
 
             <Card className="p-6 border-0 shadow-card">

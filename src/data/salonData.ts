@@ -90,6 +90,11 @@ export const defaultSalonSettings: SalonSettings = {
   description: 'Seu momento de beleza e cuidado pessoal',
   whatsapp: '11999999999',
   coverPhoto: '/placeholder.svg',
+  bannerUrl: '',
+  logoUrl: '',
+  logoFormat: 'circular',
+  bannerFormat: 'rectangular',
+  themePreset: 'purple',
   openingHours: { start: '08:00', end: '19:00' },
   workingDays: [1, 2, 3, 4, 5, 6],
 };
