@@ -38,11 +38,19 @@ export interface Client {
   appointments: Appointment[];
 }
 
+export type ImageFormat = 'square' | 'rectangular' | 'circular';
+export type ThemePreset = 'purple' | 'rose' | 'gold';
+
 export interface SalonSettings {
   name: string;
   description: string;
   whatsapp: string;
   coverPhoto: string;
+  bannerUrl: string;
+  logoUrl: string;
+  logoFormat: ImageFormat;
+  bannerFormat: ImageFormat;
+  themePreset: ThemePreset;
   openingHours: { start: string; end: string };
   workingDays: number[];
 }

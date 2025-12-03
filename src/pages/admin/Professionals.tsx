@@ -1,20 +1,70 @@
+import { useState } from 'react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { SubscriptionGate } from '@/components/SubscriptionGate';
 import { useSalon } from '@/contexts/SalonContext';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { ProfessionalForm } from '@/components/admin/ProfessionalForm';
+import { Professional } from '@/types/salon';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export default function Professionals() {
-  const { professionals, services } = useSalon();
+  const { professionals, services, deleteProfessional } = useSalon();
+  const [formOpen, setFormOpen] = useState(false);
+  const [editingProfessional, setEditingProfessional] = useState<Professional | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [professionalToDelete, setProfessionalToDelete] = useState<Professional | null>(null);
 
   const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+
+  const handleAdd = () => {
+    setEditingProfessional(null);
+    setFormOpen(true);
+  };
+
+  const handleEdit = (professional: Professional) => {
+    setEditingProfessional(professional);
+    setFormOpen(true);
+  };
+
+  const handleDeleteClick = (professional: Professional) => {
+    setProfessionalToDelete(professional);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (professionalToDelete) {
+      deleteProfessional(professionalToDelete.id);
+      toast({ title: 'Profissional removida com sucesso!' });
+    }
+    setDeleteDialogOpen(false);
+    setProfessionalToDelete(null);
+  };
 
   return (
     <AdminLayout>
       <div className="space-y-8">
-        <div>
-          <h1 className="text-3xl font-display font-semibold text-foreground">Profissionais</h1>
-          <p className="text-muted-foreground mt-1">Gerencie a equipe do salão</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-display font-semibold text-foreground">Profissionais</h1>
+            <p className="text-muted-foreground mt-1">Gerencie a equipe do salão</p>
+          </div>
+          <Button variant="gradient" onClick={handleAdd} className="gap-2">
+            <Plus className="w-4 h-4" />
+            Adicionar Profissional
+          </Button>
         </div>
 
         <SubscriptionGate fallbackMessage="Assine o plano PRO para gerenciar suas profissionais.">
@@ -39,6 +89,24 @@ export default function Professionals() {
                     <div className="absolute bottom-0 left-0 right-0 p-4 text-primary-foreground">
                       <h3 className="font-display text-2xl font-semibold">{professional.name}</h3>
                       <p className="text-sm opacity-90">{professional.specialty}</p>
+                    </div>
+                    <div className="absolute top-3 right-3 flex gap-2">
+                      <Button
+                        size="icon"
+                        variant="secondary"
+                        className="h-8 w-8 bg-background/80 backdrop-blur-sm hover:bg-background"
+                        onClick={() => handleEdit(professional)}
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="destructive"
+                        className="h-8 w-8"
+                        onClick={() => handleDeleteClick(professional)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
                   </div>
                   <div className="p-6 space-y-4">
@@ -79,6 +147,29 @@ export default function Professionals() {
           </div>
         </SubscriptionGate>
       </div>
+
+      <ProfessionalForm
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        professional={editingProfessional}
+      />
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja remover {professionalToDelete?.name}? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminLayout>
   );
 }
