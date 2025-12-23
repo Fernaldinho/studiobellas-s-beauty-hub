@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
-import { useSalon } from '@/contexts/SalonContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Lock, Sparkles } from 'lucide-react';
+import { Lock, Sparkles, Loader2 } from 'lucide-react';
 
 interface SubscriptionGateProps {
   children: ReactNode;
@@ -9,9 +9,9 @@ interface SubscriptionGateProps {
 }
 
 export function SubscriptionGate({ children, fallbackMessage }: SubscriptionGateProps) {
-  const { subscription, activateSubscription } = useSalon();
+  const { subscription, createCheckout, isCheckingSubscription } = useAuth();
 
-  if (subscription.isActive) {
+  if (subscription.subscribed && subscription.plan === 'PRO') {
     return <>{children}</>;
   }
 
@@ -34,11 +34,21 @@ export function SubscriptionGate({ children, fallbackMessage }: SubscriptionGate
           <Button 
             variant="hero" 
             size="xl" 
-            onClick={activateSubscription}
+            onClick={createCheckout}
             className="group"
+            disabled={isCheckingSubscription}
           >
-            <Sparkles className="w-5 h-5 mr-2 group-hover:animate-pulse" />
-            Assinar por R$ 87,30/mês
+            {isCheckingSubscription ? (
+              <>
+                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                Verificando...
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-5 h-5 mr-2 group-hover:animate-pulse" />
+                Ativar Plano PRO – R$ 45,30/mês
+              </>
+            )}
           </Button>
           <p className="text-xs text-muted-foreground mt-4">
             ✨ Profissionais ilimitadas • Agenda completa • Relatórios
