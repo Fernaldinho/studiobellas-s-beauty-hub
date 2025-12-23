@@ -68,14 +68,26 @@ serve(async (req) => {
     });
 
     const hasActiveSub = subscriptions.data.length > 0;
-    let subscriptionEnd = null;
-    let productId = null;
+    let subscriptionEnd: string | null = null;
+    let productId: string | null = null;
 
     if (hasActiveSub) {
       const subscription = subscriptions.data[0];
-      subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
+      
+      // Safely handle current_period_end - it might be undefined in list response
+      const periodEnd = subscription.current_period_end;
+      logStep("Raw subscription data", { 
+        subscriptionId: subscription.id, 
+        rawPeriodEnd: periodEnd,
+        hasItems: subscription.items?.data?.length > 0
+      });
+      
+      if (periodEnd && typeof periodEnd === 'number') {
+        subscriptionEnd = new Date(periodEnd * 1000).toISOString();
+      }
+      
       productId = subscription.items.data[0]?.price?.product as string;
-      logStep("Active subscription found", { subscriptionId: subscription.id, endDate: subscriptionEnd });
+      logStep("Active subscription found", { subscriptionId: subscription.id, endDate: subscriptionEnd, productId });
 
       // Sync with database
       await supabaseAdmin
@@ -83,15 +95,20 @@ serve(async (req) => {
         .update({ plan: "PRO" })
         .eq("id", user.id);
 
+      const upsertData: any = {
+        user_id: user.id,
+        stripe_customer_id: customerId,
+        stripe_subscription_id: subscription.id,
+        status: "active",
+      };
+      
+      if (subscriptionEnd) {
+        upsertData.current_period_end = subscriptionEnd;
+      }
+
       await supabaseAdmin
         .from("subscriptions")
-        .upsert({
-          user_id: user.id,
-          stripe_customer_id: customerId,
-          stripe_subscription_id: subscription.id,
-          status: "active",
-          current_period_end: subscriptionEnd,
-        }, { onConflict: "user_id" });
+        .upsert(upsertData, { onConflict: "user_id" });
     } else {
       logStep("No active subscription");
       
