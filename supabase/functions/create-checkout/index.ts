@@ -12,8 +12,8 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
 };
 
-// Stripe Price ID for the PRO subscription
-const STRIPE_PRICE_ID = "price_1SbFDcP29UxAYo1Io8zi8kAf";
+// Stripe Price ID for the PRO subscription (test mode)
+const STRIPE_PRICE_ID = "price_1RV26mP29UxAYo1I51TbUcjW";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
